@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Хаммам Улучшайзер</title>
+  <title>Хаммам не купить</title>
   <style>
     :root{
       --orange:#ef5a2a;
@@ -100,10 +100,13 @@
         </div>
         <button class="upgrade" id="upgradeBtn">Улучшить хаммам</button>
         <div class="controls">
-          <div class="pill"><div class="flag"></div><div>Русский</div></div>
+          <div class="pill"><div class="flag"></div><div>Автор: fo44ix</div></div>
+          <a class="pill" href="https://t.me/hammam_drun?direct" target="_blank" style="text-decoration:none;">
+            💡 Предложить идею
+          </a>
           <button class="volume" id="muteBtn">🔊</button>
         </div>
-        <div class="scorebox" id="scorebox">Пар: 0</div>
+        <div class="scorebox" id="scorebox">Бурмолда: 0</div>
       </div>
     </main>
   </div>
@@ -187,11 +190,14 @@
 
     function render(){
       hammamImg.src = `images/hammam${state.level}.png`;
-      statsEl.textContent = `Уровень: ${state.level}/8\nПаровые капли: ${state.steam}\nЗа клик: +${state.perClick}\nАвто: +${state.auto}/сек`;
-      scorebox.textContent = `Пар: ${state.steam}`;
+      statsEl.textContent = `Уровень: ${state.level}/8
+Бурмалдики ${state.steam}
+За клик: +${state.perClick}
+Авто: +${state.auto}/сек`;
+      scorebox.textContent = `Бурмалда: ${state.steam}`;
       hudTop.innerHTML = `<div>${state.steam}</div><div style="font-size:18px; font-weight:800;">в сек.</div>`;
       upgradeBtn.textContent = state.level < maxLevel
-        ? `Улучшить хаммам (${costFor(state.level+1)} пара)`
+        ? `Улучшить хаммам (${costFor(state.level+1)} бурмалды)`
         : 'Хаммам максимум!';
       upgradeBtn.disabled = state.level >= maxLevel || state.steam < costFor(state.level + 1);
       buildShop();
@@ -240,7 +246,7 @@
         pickRandomTrack();
         bgm.muted = state.muted;
         await bgm.play();
-        startBtn.textContent = 'Музыка играет';
+        startBtn.textContent = 'Кликни чтобы включить следующюю песню';
         startBtn.style.opacity = '0.72';
       } catch(e){
         startBtn.textContent = 'Не удалось включить';
@@ -270,4 +276,3 @@
   </script>
 </body>
 </html>
-
