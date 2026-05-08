@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Хаммам Улучшайзер</title>
+  <style>
+    :root{
+      --orange:#ef5a2a;
+      --dark:#2d2d2d;
+      --panel:rgba(34,34,34,.72);
+      --glass:rgba(255,255,255,.9);
+      --muted:#d6d6d6;
+    }
+    *{box-sizing:border-box}
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,.42), transparent 28%),
+      linear-gradient(180deg,#cfd8df 0%, #aab6bf 20%, #98a4ad 44%, #73808a 72%, #5c676f 100%);}
+    body:before{
+      content:"";
+      position:fixed;inset:0;
+      background:
+        radial-gradient(circle at 58% 40%, rgba(255,255,255,.25), transparent 22%),
+        radial-gradient(circle at 58% 40%, rgba(255,255,255,.08), transparent 40%),
+        linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.08));
+      pointer-events:none;
+      mix-blend-mode:screen;
+    }
+    .game{position:relative;width:100vw;height:100vh;display:flex}
+    .left{
+      width:min(31vw, 420px);min-width:280px;padding:10px 10px 12px 10px;
+      background:linear-gradient(180deg, rgba(0,0,0,.22), rgba(0,0,0,.18));
+      backdrop-filter: blur(2px);border-right:2px solid rgba(0,0,0,.2);
+      display:flex;flex-direction:column;gap:12px;z-index:2;
+    }
+    .shop-title{
+      height:115px;border-radius:18px;background:linear-gradient(180deg, #ff6d36, #f0592b);
+      border:4px solid rgba(0,0,0,.15);box-shadow:0 10px 0 rgba(0,0,0,.12);
+      display:flex;align-items:center;justify-content:center;
+      font-size:clamp(28px, 4vw, 68px);font-weight:900;color:#6f2f16;letter-spacing:1px;
+      position:relative;
+    }
+    .shop-title .cart{position:absolute;right:18px;top:18px;font-size:44px;line-height:1}
+    .items{display:flex;flex-direction:column;gap:10px;overflow:hidden}
+    .item{
+      height:111px;border-radius:18px;background:var(--panel);
+      border:1px solid rgba(255,255,255,.08);box-shadow:0 8px 0 rgba(0,0,0,.16);
+      position:relative;padding:14px 14px 10px 16px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between;overflow:hidden;
+    }
+    .item.locked{opacity:.92}
+    .item .txt{display:flex;flex-direction:column;gap:4px}
+    .item .name{font-size:20px;font-weight:800;color:#ececec}
+    .item .desc{font-size:14px;color:var(--muted)}
+    .item .bigicon{font-size:54px;opacity:.95;filter: drop-shadow(0 2px 0 rgba(0,0,0,.3))}
+    .item .badge{position:absolute;right:14px;bottom:9px;font-size:14px;color:#fff;background:rgba(255,255,255,.12);padding:4px 9px;border-radius:999px}
+    .main{flex:1;position:relative;display:flex;align-items:center;justify-content:center;padding:18px}
+    .scene{
+      position:relative;width:100%;height:100%;
+      background:radial-gradient(circle at 50% 60%, rgba(255,255,255,.2), transparent 22%), radial-gradient(circle at 50% 60%, rgba(255,255,255,.08), transparent 34%);
+      border-radius:24px;
+    }
+    .hammam-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-48%);width:min(56vw, 720px);max-width:720px;min-width:340px;display:flex;flex-direction:column;align-items:center;gap:14px}
+    .hud-top{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:18px;font-size:34px;font-weight:900;color:#111;text-shadow:0 2px 0 rgba(255,255,255,.45)}
+    .scorebox{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--glass);border-radius:16px;padding:12px 28px;font-size:28px;font-weight:900;color:#7d3b21;box-shadow:0 8px 20px rgba(0,0,0,.18);border:2px solid rgba(0,0,0,.08);z-index:3;user-select:none}
+    .hammam-btn{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:100%;filter: drop-shadow(0 14px 14px rgba(0,0,0,.24));transition:transform .08s ease}
+    .hammam-btn:active{transform: translateY(4px) scale(.992)}
+    .hammam-btn img{width:100%;height:auto;max-height:70vh;object-fit:contain;user-select:none;-webkit-user-drag:none}
+    .floating{position:absolute;pointer-events:none;font-weight:900;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.45);font-size:26px;animation: floatUp 900ms ease-out forwards}
+    @keyframes floatUp{from{opacity:1;transform:translate(-50%,0) scale(1)}to{opacity:0;transform:translate(-50%,-78px) scale(1.12)}}
+    .controls{position:absolute;right:18px;bottom:18px;display:flex;flex-direction:column;gap:12px;align-items:flex-end;z-index:3}
+    .pill{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.95);border-radius:999px;padding:10px 14px;box-shadow:0 8px 20px rgba(0,0,0,.15);font-size:16px;font-weight:800;color:#333}
+    .flag{width:48px;height:48px;border-radius:50%;background:linear-gradient(180deg,#fff 0 33%, #2f63c6 33% 66%, #da2d20 66% 100%);border:3px solid rgba(0,0,0,.08)}
+    .volume{width:54px;height:54px;border-radius:16px;background:#fff;border:none;box-shadow:0 8px 20px rgba(0,0,0,.15);cursor:pointer;font-size:26px}
+    .start{
+      position:absolute;top:18px;right:18px;background:linear-gradient(180deg, #ff6a35, #ff4f18);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-weight:900;box-shadow:0 10px 18px rgba(0,0,0,.16);cursor:pointer;z-index:5
+    }
+    .upgrade{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg, #fff, #f4e9d5);color:#6e3a19;border:none;border-radius:18px;padding:14px 22px;font-size:24px;font-weight:900;box-shadow:0 10px 20px rgba(0,0,0,.15);cursor:pointer;z-index:4}
+    .upgrade:disabled{opacity:.55;cursor:not-allowed}
+    .stats{position:absolute;top:18px;left:18px;background:rgba(255,255,255,.82);padding:10px 14px;border-radius:16px;font-size:15px;font-weight:800;color:#333;line-height:1.35;z-index:4;box-shadow:0 8px 20px rgba(0,0,0,.12);white-space:pre-line}
+    .note{position:absolute;left:18px;bottom:18px;max-width:380px;background:rgba(255,255,255,.84);padding:12px 14px;border-radius:16px;font-size:14px;color:#333;box-shadow:0 8px 20px rgba(0,0,0,.12)}
+    @media (max-width: 900px){.left{width:260px;min-width:260px}.hammam-wrap{width:min(64vw, 560px)}.shop-title{height:88px}.item{height:95px}.item .bigicon{font-size:46px}}
+    @media (max-width: 720px){.left{width:230px;min-width:230px;padding:8px}.shop-title{font-size:38px;height:80px}.item{height:86px;padding:10px}.item .name{font-size:16px}.item .desc{font-size:12px}.controls{bottom:10px;right:10px}.note{max-width:260px;font-size:12px}.upgrade{font-size:18px}}
+  </style>
+</head>
+<body>
+  <div class="game">
+    <aside class="left">
+      <div class="shop-title">Магазин <span class="cart">🛒</span></div>
+      <div class="items" id="shop"></div>
+    </aside>
+    <main class="main">
+      <div class="scene">
+        <button class="start" id="startBtn">Включить музыку</button>
+        <div class="stats" id="stats"></div>
+        <div class="hud-top" id="hudTop"></div>
+        <div class="hammam-wrap">
+          <button class="hammam-btn" id="hammamBtn" aria-label="Хаммам">
+            <img id="hammamImg" src="images/hammam1.png" alt="Хаммам">
+          </button>
+        </div>
+        <button class="upgrade" id="upgradeBtn">Улучшить хаммам</button>
+        <div class="controls">
+          <div class="pill"><div class="flag"></div><div>Русский</div></div>
+          <button class="volume" id="muteBtn">🔊</button>
+        </div>
+        <div class="scorebox" id="scorebox">Пар: 0</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const maxLevel = 8;
+    const shop = [
+      {name:"Темный друн", desc:"Блогер мелстрой", icon:"🌑"},
+      {name:"Меллстрой", desc:"легенда", icon:"⚡"},
+      {name:"Турецкая баня", desc:"она моет тебя пеной", icon:"🕌"},
+      {name:"Мурино FM", desc:"", icon:"📻"},
+      {name:"Массажные столы", desc:"Ложишься бурмолдишь", icon:"🛏️"},
+      {name:"Я помылся", desc:"ахахахахах", icon:"🫧"},
+      {name:"Фрукты", desc:"Сливы / яблоки / банан", icon:"🍎"},
+      {name:"Легендарный хаммам", desc:"Финальная форма", icon:"🏆"}
+    ];
+    const tracks = [
+      "music/1.mp3",
+      "music/2.mp3",
+      "music/3.mp3",
+      "music/4.mp3",
+      "music/5.mp3",
+      "music/6.mp3",
+      "music/7.mp3",
+      "music/8.mp3",
+      "music/9.mp3",
+      "music/10.mp3",
+      "music/11.mp3"
+    ];
+
+    const state = { level: 1, steam: 0, perClick: 1, auto: 0, musicOn: false, muted: false, currentTrack: -1 };
+    const shopEl = document.getElementById('shop');
+    const statsEl = document.getElementById('stats');
+    const hudTop = document.getElementById('hudTop');
+    const scorebox = document.getElementById('scorebox');
+    const hammamImg = document.getElementById('hammamImg');
+    const upgradeBtn = document.getElementById('upgradeBtn');
+    const startBtn = document.getElementById('startBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const clickSound = new Audio('sound/am.mp3');
+    clickSound.preload = 'auto';
+    const bgm = new Audio();
+    bgm.preload = 'auto';
+    bgm.volume = 0.55;
+    clickSound.volume = 0.75;
+
+    function pickRandomTrack(){
+      if (!tracks.length) return;
+      let idx = Math.floor(Math.random() * tracks.length);
+      if (tracks.length > 1 && idx === state.currentTrack) idx = (idx + 1) % tracks.length;
+      state.currentTrack = idx;
+      bgm.src = tracks[idx] + '?v=' + Date.now();
+      bgm.load();
+    }
+
+    bgm.addEventListener('ended', () => {
+      if (!state.musicOn) return;
+      pickRandomTrack();
+      bgm.play().catch(()=>{});
+    });
+
+    function buildShop(){
+      shopEl.innerHTML = "";
+      shop.forEach((it, idx) => {
+        const unlocked = idx + 1 <= state.level;
+        const el = document.createElement('div');
+        el.className = 'item ' + (unlocked ? '' : 'locked');
+        el.innerHTML = `
+          <div class="txt">
+            <div class="name">${unlocked ? it.name : '???'}</div>
+            <div class="desc">${unlocked ? it.desc : 'Заблокировано до следующего уровня'}</div>
+          </div>
+          <div class="bigicon">${unlocked ? it.icon : (idx % 2 ? '🖱️' : '❓')}</div>
+          <div class="badge">${unlocked ? 'Открыто' : 'Уровень ' + (idx+1)}</div>
+        `;
+        shopEl.appendChild(el);
+      });
+    }
+
+    function costFor(level){ return level * 12; }
+
+    function render(){
+      hammamImg.src = `images/hammam${state.level}.png`;
+      statsEl.textContent = `Уровень: ${state.level}/8\nПаровые капли: ${state.steam}\nЗа клик: +${state.perClick}\nАвто: +${state.auto}/сек`;
+      scorebox.textContent = `Пар: ${state.steam}`;
+      hudTop.innerHTML = `<div>${state.steam}</div><div style="font-size:18px; font-weight:800;">в сек.</div>`;
+      upgradeBtn.textContent = state.level < maxLevel
+        ? `Улучшить хаммам (${costFor(state.level+1)} пара)`
+        : 'Хаммам максимум!';
+      upgradeBtn.disabled = state.level >= maxLevel || state.steam < costFor(state.level + 1);
+      buildShop();
+    }
+
+    function playClick(){
+      if (state.muted) return;
+      try {
+        clickSound.currentTime = 0;
+        clickSound.play();
+      } catch(e) {}
+    }
+
+    function floatText(x, y, text){
+      const el = document.createElement('div');
+      el.className = 'floating';
+      el.textContent = text;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 950);
+    }
+
+    document.getElementById('hammamBtn').addEventListener('click', (e) => {
+      state.steam += state.perClick;
+      playClick();
+      const rect = e.currentTarget.getBoundingClientRect();
+      floatText(rect.left + rect.width/2, rect.top + rect.height/2, `+${state.perClick}`);
+      render();
+    });
+
+    upgradeBtn.addEventListener('click', () => {
+      const nextCost = costFor(state.level + 1);
+      if (state.level >= maxLevel || state.steam < nextCost) return;
+      state.steam -= nextCost;
+      state.level += 1;
+      state.perClick += 1;
+      state.auto += 1;
+      playClick();
+      render();
+    });
+
+    startBtn.addEventListener('click', async () => {
+      state.musicOn = true;
+      try{
+        pickRandomTrack();
+        bgm.muted = state.muted;
+        await bgm.play();
+        startBtn.textContent = 'Музыка играет';
+        startBtn.style.opacity = '0.72';
+      } catch(e){
+        startBtn.textContent = 'Не удалось включить';
+      }
+    });
+
+    muteBtn.addEventListener('click', () => {
+      state.muted = !state.muted;
+      bgm.muted = state.muted;
+      clickSound.muted = state.muted;
+      muteBtn.textContent = state.muted ? '🔇' : '🔊';
+    });
+
+    setInterval(() => {
+      if (state.auto > 0) {
+        state.steam += state.auto;
+        render();
+      }
+    }, 1000);
+
+    setInterval(() => {
+      const wrap = document.querySelector('.hammam-wrap');
+      wrap.style.transform = `translate(-50%, -48%) translateY(${Math.sin(Date.now()/900)*2}px)`;
+    }, 60);
+
+    render();
+  </script>
+</body>
+</html>
+
